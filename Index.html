@@ -10,12 +10,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
 
-    <!-- ==========================================================
-         BAGIAN 1: CSS (TAMPILAN)
-         CSS mengatur warna, ukuran, dan tata letak halaman.
-         Warna ditaruh di variabel (--nama) supaya mudah diganti
-         dan mendukung mode gelap.
-         ========================================================== -->
+    <!-- BAGIAN 1: CSS (TAMPILAN) -->
     <style>
         :root {
             --bg: #eef2f7;
@@ -111,7 +106,7 @@
             gap: 16px;
         }
 
-        /* Kartu dibuat mirip kartu pelajar */
+        /* Kartu mirip kartu pelajar */
         .kartu {
             background: var(--kartu);
             border: 1px solid var(--garis);
@@ -207,11 +202,7 @@
 </head>
 
 <body>
-    <!-- ==========================================================
-         BAGIAN 2: HTML (KERANGKA HALAMAN)
-         Hanya berisi kerangka kosong. Kartu siswa akan diisi
-         oleh JavaScript setelah data diambil dari Supabase.
-         ========================================================== -->
+    <!-- BAGIAN 2: HTML (KERANGKA HALAMAN) -->
     <div class="wadah">
         <header>
             <h1>Biodata Siswa</h1>
@@ -238,26 +229,14 @@
     <!-- Library Supabase dari CDN -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
 
-    <!-- ==========================================================
-         BAGIAN 3: JAVASCRIPT (LOGIKA)
-         Alurnya:
-         1. Hubungkan ke Supabase
-         2. Ambil data siswa
-         3. Gambar kartu di halaman
-         4. Perbarui kartu saat pengunjung mencari / memfilter
-         ========================================================== -->
+    <!-- BAGIAN 3: JAVASCRIPT (LOGIKA) -->
     <script>
-        // ---------- LANGKAH 1: PENGATURAN ----------
+        // LANGKAH 1: PENGATURAN
         // Ganti dua nilai ini dengan milik projectmu.
-        // Supabase > Settings > API > Project URL dan anon key.
-        // Anon key aman ditaruh di sini karena yang melindungi data
-        // adalah aturan RLS di Supabase, bukan kerahasiaan key ini.
-        // JANGAN PERNAH menaruh service_role key di file ini.
+        const SUPABASE_URL = "https://zfiogkinahunkcyousfw.supabase.co";
+        const SUPABASE_ANON_KEY = "sb_publishable_NougVeipxjxAQEeFgNf2Yg_C6g1iL0j";
 
-        const SUPABASE_URL = https://zfiogkinahunkcyousfw.supabase.co/rest/v1/
-        const SUPABASE_ANON_KEY = https://zfiogkinahunkcyousfw.supabase.co/rest/v1/
-
-        // Pilih data pribadi mana yang boleh tampil di website publik.
+        // Pilih data pribadi mana yang boleh tampil.
         // true = tampil, false = disembunyikan.
         const TAMPILKAN = {
             jenisKelamin: true,
@@ -265,22 +244,22 @@
             alamat: false
         };
 
-        // ---------- LANGKAH 2: HUBUNGKAN KE SUPABASE ----------
+        // LANGKAH 2: HUBUNGKAN KE SUPABASE
         const db = supabase.createClient(
             SUPABASE_URL,
             SUPABASE_ANON_KEY
         );
 
-        // Ambil elemen HTML yang akan kita isi / baca
+        // Ambil elemen HTML
         const elDaftar = document.getElementById("daftar");
         const elJumlah = document.getElementById("jumlah");
         const elCari = document.getElementById("cari");
         const elKelas = document.getElementById("filterKelas");
 
-        // Tempat menyimpan seluruh data siswa setelah diambil
+        // Tempat menyimpan seluruh data siswa
         let semuaSiswa = [];
 
-        // ---------- LANGKAH 3: AMBIL DATA ----------
+        // LANGKAH 3: AMBIL DATA
         async function muatData() {
             tampilkanPesan("Memuat data siswa...");
 
@@ -307,12 +286,12 @@
             tampilkanSiswa();
         }
 
-        // ---------- LANGKAH 4: TAMPILKAN KARTU ----------
+        // LANGKAH 4: TAMPILKAN KARTU
         function tampilkanSiswa() {
             const kataKunci = elCari.value.trim().toLowerCase();
             const kelasDipilih = elKelas.value;
 
-            // filter() menyaring data sesuai pencarian dan kelas
+            // Saring data sesuai pencarian dan kelas
             const hasil = semuaSiswa.filter((s) => {
                 const cocokKelas =
                     !kelasDipilih || s.kelas === kelasDipilih;
@@ -328,7 +307,7 @@
             elJumlah.textContent =
                 hasil.length + " dari " + semuaSiswa.length + " siswa";
 
-            elDaftar.replaceChildren(); // Kosongkan daftar lama
+            elDaftar.replaceChildren();
 
             if (hasil.length === 0) {
                 tampilkanPesan(
@@ -346,8 +325,6 @@
         }
 
         // Membuat satu kartu dari satu baris data siswa.
-        // Kita pakai textContent (bukan innerHTML) supaya teks dari database
-        // tidak bisa menyisipkan kode berbahaya (serangan XSS).
         function buatKartu(s) {
             const kartu = el("article", "kartu");
             kartu.style.setProperty("--hue", warnaKelas(s.kelas));
@@ -356,7 +333,7 @@
 
             const isi = el("div", "isi");
 
-            // Foto: pakai foto_url kalau ada, kalau tidak tampilkan inisial nama
+            // Foto: pakai foto_url kalau ada, kalau tidak tampilkan inisial.
             const foto = el("div", "foto");
 
             if (s.foto_url) {
@@ -381,13 +358,17 @@
             isi.appendChild(el("h2", "nama", s.nama));
             isi.appendChild(el("p", "nis", "NIS " + s.nis));
 
-            // Daftar rincian (hanya baris yang ada isinya dan diizinkan tampil)
+            // Daftar rincian
             const rincian = el("dl", "rincian");
 
             tambahBaris(rincian, "Kelas", s.kelas);
 
             if (TAMPILKAN.jenisKelamin) {
-                tambahBaris(rincian, "Jenis kelamin", s.jenis_kelamin);
+                tambahBaris(
+                    rincian,
+                    "Jenis kelamin",
+                    s.jenis_kelamin
+                );
             }
 
             if (TAMPILKAN.tanggalLahir) {
@@ -408,9 +389,8 @@
             return kartu;
         }
 
-        // ---------- FUNGSI BANTU ----------
-
-        // Membuat elemen HTML dengan kelas dan teks
+        // FUNGSI BANTU
+        // Membuat elemen HTML dengan kelas dan teks.
         function el(tag, kelas, teks) {
             const e = document.createElement(tag);
 
@@ -421,7 +401,7 @@
         }
 
         function tambahBaris(dl, label, nilai) {
-            if (!nilai) return; // Lewati kalau datanya kosong
+            if (!nilai) return;
 
             const baris = el("div");
 
@@ -441,7 +421,7 @@
                 .join("");
         }
 
-        // Setiap kelas mendapat warna sendiri secara otomatis dari namanya
+        // Setiap kelas mendapat warna sendiri secara otomatis.
         function warnaKelas(kelas) {
             let total = 0;
 
@@ -456,14 +436,12 @@
         function formatTanggal(teks) {
             if (!teks) return "";
 
-            return new Date(teks + "T00:00:00").toLocaleDateString(
-                "id-ID",
-                {
+            return new Date(teks + "T00:00:00")
+                .toLocaleDateString("id-ID", {
                     day: "numeric",
                     month: "long",
                     year: "numeric"
-                }
-            );
+                });
         }
 
         function tampilkanPesan(teks, galat) {
@@ -476,7 +454,7 @@
             );
         }
 
-        // Isi pilihan filter kelas dari data yang ada (tanpa duplikat)
+        // Isi pilihan filter kelas dari data yang ada.
         function isiPilihanKelas() {
             const daftarKelas = [
                 ...new Set(
@@ -494,13 +472,12 @@
             });
         }
 
-        // ---------- JALANKAN ----------
-        // Setiap kali pengunjung mengetik atau mengganti kelas, kartu diperbarui
+        // JALANKAN
+        // Perbarui kartu saat pengunjung mencari atau memfilter.
         elCari.addEventListener("input", tampilkanSiswa);
         elKelas.addEventListener("change", tampilkanSiswa);
 
         muatData();
     </script>
 </body>
-        </html>
-    
+                                 </html>
